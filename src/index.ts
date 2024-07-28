@@ -2,6 +2,14 @@ import { h, Time, Schema, Context } from 'koishi'
 
 export const name = 'graze'
 
+export const usage = `
+- **指令：p-graze [tag]**\n
+    别名：擦弹\n
+    负收益游戏，赌狗不得house（doge）
+- **指令：p-list**\n
+    别名：p点排行\n
+    查看本群成员p点排行\n`;
+
 export const inject = {
   required: ['database'],
   optional: [],
