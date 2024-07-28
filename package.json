@@ -1,6 +1,6 @@
 {
   "name": "koishi-plugin-p-graze",
-  "description": "擦弹",
+  "description": "p点-擦弹",
   "version": "1.0.0",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
