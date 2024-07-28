@@ -1,0 +1,30 @@
+adminUsers:
+  $description: 管理员用户
+deadline:
+  $description: 连续多次余额低于此线擦弹的用户将会被封禁
+pagesize:
+  $description: 默认的排行人数
+bonus:
+  $description: 全员存活的奖励
+outputLogs:
+  $description: 是否将用户的签到操作打印在日志里
+commands:
+  p-graze:
+    description: 东方轮盘赌
+    messages:
+        not-group: 请去群组里使用该功能
+        banded: 此账号疑似作弊，请不要用小号擦弹，如果误封请联系管理员解封
+        account-notExists: 君现在还没有p点，请先签到哦
+        no-enough-p: 君的p点不够1500哦，先去签个到吧qwq
+        init-ok: 初始化完成，本群p点池现有9961p点
+        already-dead: <at id={0}/>君已经似了，请明天再来吧！
+        new-turn: 已开启新一轮，共六轮弹幕
+        boom: 好死miss咯，<at id={0}/>爆了{1}p点，p点已进入本群p点池
+        succeed: <at id={0}/>擦弹成功，从本群p点池获取了{1}p点奖励，当前还剩{2}轮弹幕
+        all-alive: 恭喜全员存活，群p点池增加{0}p点
+  p-list:
+      description: p点排行
+      messages:
+        please-wait: 正在开始处理，请稍候
+      options:
+        full: 显示所有人
