@@ -53,6 +53,7 @@ export interface p_system {
   p: number
   time: Date
   deadTime: Date
+  favorability: number
   ban: string
 }
 export interface p_graze {
@@ -71,6 +72,7 @@ export async function apply(ctx: Context, cfg: Config) {
     usersname: 'string',
     p: 'integer',
     deadTime: 'timestamp',
+    favorability: 'integer',
     ban: 'string'
   }, { autoInc: true })
 
@@ -196,5 +198,39 @@ export async function apply(ctx: Context, cfg: Config) {
     if(options.full)
       return `本群p点排行：\n${rankMessages.slice(0, length).join('\n')}`;
     return `本群p点排行：\n${rankMessages.slice(0, limit).join('\n')}`;
+  });
+
+
+  ctx.command('p/favorability-list [pagesize:number]').alias('好感排行')
+  .option('full', '-f')
+  .action(async ({ session, options }, pagesize) => {
+    let idList = ((await ctx.database.get('p_graze', { channelid: session.channelId }))[0]?.users).split('-');
+    let favorabilityList = [];
+    let rank = [];
+    const length = idList.length;
+    await session.send(session.text('.please-wait'));
+
+    for (let i = 0; i < length; i++) {
+      favorabilityList.push((await ctx.database.get('p_system', { userid: idList[i] }))[0]?.favorability);
+    }
+    const sortedPList = favorabilityList.slice().sort((a, b) => b - a);
+
+    for (let i = 0; i < length; i++) {
+      for (let j = 0; j < length; j++){
+        const userRecord = await ctx.database.get('p_system', { userid: idList[j] });
+        if (userRecord[0].favorability == sortedPList[i] && !rank.includes(userRecord[0]?.usersname)) {
+          if(userRecord[0]?.usersname)
+            rank.push(userRecord[0]?.usersname);
+          else
+            rank.push(userRecord[0]?.userid);
+        }
+      }
+    }
+
+    const rankMessages = rank.map((id, index) => `${index + 1}. ${id}`);
+    const limit = pagesize == null ? cfg.pageSize : Math.min(pagesize, length);
+    if(options.full)
+      return `本群好感排行：\n${rankMessages.slice(0, length).join('\n')}`;
+    return `本群好感排行：\n${rankMessages.slice(0, limit).join('\n')}`;
   });
 }

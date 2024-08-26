@@ -28,3 +28,9 @@ commands:
         please-wait: 正在开始处理，请稍候
       options:
         full: 显示所有人
+  favorability-list:
+      description: 好感排行
+      messages:
+        please-wait: 正在开始处理，请稍候
+      options:
+        full: 显示所有人
