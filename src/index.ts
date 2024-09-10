@@ -218,7 +218,7 @@ export async function apply(ctx: Context, cfg: Config) {
     for (let i = 0; i < length; i++) {
       for (let j = 0; j < length; j++){
         const userRecord = await ctx.database.get('p_system', { userid: idList[j] });
-        if (userRecord[0].favorability == sortedPList[i] && !rank.includes(userRecord[0]?.usersname)) {
+        if (userRecord[0]?.favorability == sortedPList[i] && !rank.includes(userRecord[0]?.usersname)) {
           if(userRecord[0]?.usersname)
             rank.push(userRecord[0]?.usersname);
           else
