@@ -134,7 +134,7 @@ export async function apply(ctx: Context, cfg: Config) {
         await ctx.database.set('p_system', { userid: USERID }, { ban: 'status1' })
     if (usersdata[0]?.ban == 'status1' && saving <= 1600)
       await ctx.database.set('p_system', { userid: USERID }, { ban: 'status2' })
-    if (saving <= 1600) {
+    else if (saving <= 1600) {
       await ctx.database.set('p_system', { userid: USERID }, { ban: 'status1' })
     }
     if (((await ctx.database.get('p_graze', { channelid: CHANNELID }))[0]?.bullet) <= 0) {
