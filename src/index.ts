@@ -19,6 +19,7 @@ export interface Config {
   deadline: number
   pageSize: number
   bonus: number
+  Offset: number
   outputLogs: boolean
 }
 
@@ -27,6 +28,7 @@ export const Config: Schema<Config> = Schema.object({
   deadline: Schema.number().default(1600),
   pageSize: Schema.number().default(10),
   bonus: Schema.number().default(5000),
+  Offset: Schema.number().default(0),
   outputLogs: Schema.boolean().default(true)
 }).i18n({
   'zh-CN': require('./locales/zh-CN'),
@@ -117,7 +119,7 @@ export async function apply(ctx: Context, cfg: Config) {
     if (saving < 1500) return session.text('.no-enough-p');
     let oldDate: string;
     if (usersdata[0]?.deadTime) oldDate = Time.template('yyyy-MM-dd', usersdata[0].deadTime);
-    const newDate = Time.template('yyyy-MM-dd', new Date());
+    const newDate = Time.template('yyyy-MM-dd', new Date(Date.now() + cfg.Offset * 60 * 1000));
     const targetInfo = await ctx.database.get('p_graze', { channelid: CHANNELID }); //该群是否擦弹过
     if (targetInfo.length == 0 || targetInfo[0]?.p == 0) {
       if(targetInfo[0]?.p == 0)
@@ -148,7 +150,7 @@ export async function apply(ctx: Context, cfg: Config) {
       await session.sendQueued(session.text('.boom',[USERID, boom]));
       await ctx.database.set('p_graze', { channelid: CHANNELID }, { p: channelIdData[0]?.p + Math.round(boom / 2) })
       await ctx.database.set('p_system', { userid: USERID }, { p: saving - boom })
-      await ctx.database.set('p_system', { userid: USERID }, { deadTime: new Date() })
+      await ctx.database.set('p_system', { userid: USERID }, { deadTime: new Date(Date.now() + cfg.Offset * 60 * 1000) })
       await ctx.database.set('p_graze', { channelid: CHANNELID }, { bullet: 0 })
       if (cfg.outputLogs) logger.success(USERID + '擦弹爆炸');
     } else {

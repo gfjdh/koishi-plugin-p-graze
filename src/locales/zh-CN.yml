@@ -6,6 +6,8 @@ pagesize:
   $description: 默认的排行人数
 bonus:
   $description: 全员存活的奖励
+Offset:
+  $description: "复活刷新时间的提前量（分钟）"
 outputLogs:
   $description: 是否将用户的签到操作打印在日志里
 commands:
