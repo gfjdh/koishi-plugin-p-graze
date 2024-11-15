@@ -100,47 +100,67 @@ export async function apply(ctx: Context, cfg: Config) {
     return next();
   })
 
-  ctx.command('p/p-graze').alias('擦弹')
-  .action(async ({ session }) => {
+  ctx.command('p/p-graze').alias('擦弹').action(async ({ session }) => {
     const matchResult = session.channelId.match(new RegExp("private", "g"));
     if (matchResult && matchResult.includes("private"))
       return session.text('.not-group');
-    const USERID = session.userId;//发送者的用户id
+
+    const USERID = session.userId; // 发送者的用户id
     const CHANNELID = session.channelId;
-    const notExists = await isTargetIdExists(ctx, USERID); //该群中的该用户是否签到过
+
+    // 检查该群中的该用户是否签到过
+    const notExists = await isTargetIdExists(ctx, USERID);
     if (notExists)
       return session.text('.account-notExists');
+
+    // 获取用户数据
     const usersdata = await ctx.database.get('p_system', { userid: USERID });
+
+    // 检查用户是否被封禁
     if (usersdata[0]?.ban == 'banded') {
       if (cfg.outputLogs) logger.success(USERID + '已封号');
       return session.text('.banded');
     }
+
     const saving = usersdata[0].p;
+
+    // 检查用户积分是否足够
     if (saving < 1500) return session.text('.no-enough-p');
+
     let oldDate: string;
     if (usersdata[0]?.deadTime) oldDate = Time.template('yyyy-MM-dd', usersdata[0].deadTime);
     const newDate = Time.template('yyyy-MM-dd', new Date(Date.now() + cfg.Offset * 60 * 1000));
-    const targetInfo = await ctx.database.get('p_graze', { channelid: CHANNELID }); //该群是否擦弹过
+
+    // 获取群组擦弹数据
+    const targetInfo = await ctx.database.get('p_graze', { channelid: CHANNELID });
+
+    // 初始化群组擦弹数据
     if (targetInfo.length == 0 || targetInfo[0]?.p == 0) {
-      if(targetInfo[0]?.p == 0)
-        await ctx.database.set('p_graze', { channelid: CHANNELID }, {p: 9961})
+      if (targetInfo[0]?.p == 0)
+        await ctx.database.set('p_graze', { channelid: CHANNELID }, { p: 9961 });
       else
-        await ctx.database.create('p_graze', { channelid: CHANNELID, p: 9961, bullet: 0 })
+        await ctx.database.create('p_graze', { channelid: CHANNELID, p: 9961, bullet: 0 });
       await session.sendQueued(session.text('.init-ok'));
     }
-    if (!cfg.adminUsers.includes(USERID) && oldDate == newDate) return session.text('.already-dead',[USERID]);
-    if (usersdata[0]?.ban == 'status2')
-      if (saving <= 1600)
-        await ctx.database.set('p_system', { userid: USERID }, { ban: 'banded' })
+
+    // 检查用户是否已经擦弹过
+    if (!cfg.adminUsers.includes(USERID) && oldDate == newDate) return session.text('.already-dead', [USERID]);
+
+    // 根据用户积分进行封禁处理
+    if (usersdata[0]?.ban == 'status2') {
+      if (saving <= cfg.deadline)
+        await ctx.database.set('p_system', { userid: USERID }, { ban: 'banded' });
       else
-        await ctx.database.set('p_system', { userid: USERID }, { ban: 'status1' })
-    if (usersdata[0]?.ban == 'status1' && saving <= 1600)
-      await ctx.database.set('p_system', { userid: USERID }, { ban: 'status2' })
-    else if (saving <= 1600) {
-      await ctx.database.set('p_system', { userid: USERID }, { ban: 'status1' })
+        await ctx.database.set('p_system', { userid: USERID }, { ban: 'status1' });
+    } else if (usersdata[0]?.ban == 'status1' && saving <= cfg.deadline) {
+      await ctx.database.set('p_system', { userid: USERID }, { ban: 'status2' });
+    } else if (saving <= cfg.deadline) {
+      await ctx.database.set('p_system', { userid: USERID }, { ban: 'status1' });
     }
+
+    // 检查子弹数量并重置
     if (((await ctx.database.get('p_graze', { channelid: CHANNELID }))[0]?.bullet) <= 0) {
-      await ctx.database.set('p_graze', { channelid: CHANNELID }, { bullet: 6 })
+      await ctx.database.set('p_graze', { channelid: CHANNELID }, { bullet: 6 });
       await session.sendQueued(session.text('.new-turn'));
     }
     let channelIdData = await ctx.database.get('p_graze', { channelid: CHANNELID });
